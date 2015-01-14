@@ -36,6 +36,7 @@
         public var labelMarginX:uint = 20;
         public var labelMarginY:uint = 30;
         public var cellWidth:uint;
+		public var btnMargin:uint = 10;
 
         // variables for network connections
         public var siteUrl:String = "http://shader.jios.org:8080";
@@ -67,6 +68,7 @@
         public var queryType:String = 'all';
         public var sortType:String = 'py';
         private var currentKeyword:String = '';
+		private var currentUserClass:uint;
         private var loadedCard:uint = 0;
         public var queryInProgress:Boolean = false;
         public var isDiag:Boolean = true;
@@ -77,6 +79,7 @@
             "十一划","十二划","十三划","十四划","十五划",
             "十六划","十七划","十八划","十九划","二十划"
             );
+
 
 
         public function portWall() {
@@ -233,6 +236,20 @@
 
             // Button setup section
 			navbtns = new Vector.<nav_btn>;
+			
+			if (userClass == 5) {
+				var btn_back:nav_btn = new nav_btn();
+				btn_back.name = "btn5";
+				navbtns.push(btn_back);
+				btn_back.btnWidth = 382;
+				addChild(btn_back);
+				btn_back.x = frameWidth - btn_back.btnWidth - btnMargin;
+				btn_back.y = 1030;
+				TweenLite.from(btn_back, 0.5, { y:"50", ease:Linear.easeOut } );
+				initCard(userClass, "sign");
+				return;
+			}
+			
 			for (var i:uint = 1; i <= 5; i++) {
 				var btn:nav_btn = new nav_btn();
 				btn.name = "btn" + i;
@@ -241,7 +258,6 @@
 				navbtns.push(btn);
 			}
 			
-			var btnMargin:uint = 10;
 			for (var i:uint = 0; i < navbtns.length; i++) {
 				var btnNum = navbtns.length;
 				var btnWidth = (frameWidth - btnMargin) / btnNum - btnMargin;
@@ -326,6 +342,7 @@
             }
 
             currentQueryType = searchType;
+			currentUserClass = userClass;
 
             if(isDiag) trace("[portWall] Query: " + finalQueryCmd);
 
@@ -654,7 +671,6 @@
                 labelId ++;
                 currentPosX[row] += gpLabel.width + labelMarginX;
 
-
                 if(isDiag) trace("[portWall] Label Menu item added : " + gpName);
 
             }
@@ -709,16 +725,19 @@
 
             }
 
-            else if(e.target.name == "btn_info"){
-                TweenLite.to(prelog, 0.5, {y:0});
-                arrowR.y = arrowL.y = -500;
-            }
+            //else if(e.target.name == "btn_info"){
+                //TweenLite.to(prelog, 0.5, {y:0});
+                //arrowR.y = arrowL.y = -500;
+            //}
 
             else if(e.target is nav_btn){
 
                 removeEventListener(MouseEvent.CLICK, onClick);
 
-                if(e.target.isActive && e.target.name == "btn_sign"){
+                if (e.target.name == "btn5") {
+					// return to frontpage
+					gotoAndStop(1);
+					initFp();
                     return;
                 }
 
@@ -741,21 +760,22 @@
                 var sort:String = e.target.sortType;
                 var keyword:String = e.target.keyword;
                 if(isDiag) trace("[portWall] Switch Querytype to :" + sort);
-                btn1.setActive(false);
-                btn2.setActive(false);
-                btn3.setActive(false);
-                btn4.setActive(false);
-                btn5.setActive(false);
-                e.target.setActive(true);
-                initCard(searchType, sort);
+				
+				for each (var navbtn:nav_btn in navbtns) {
+					if (navbtn.name != "btn5")
+						navbtn.setActive(false);
+				}
+                
+				e.target.setActive(true);
+                initCard(currentUserClass, searchType, sort);
             }
 
             else if(e.target is groupLabel){
                 removeEventListener(MouseEvent.CLICK, onClick);
                 if(e.target.keyword == "all")
-                    initCard("all", sortType);
+                    initCard(currentUserClass, "all", sortType);
                 else
-                    initCard(sortType, sortType, e.target.keyword);
+                    initCard(currentUserClass, sortType, sortType, e.target.keyword);
             }
         }
 
