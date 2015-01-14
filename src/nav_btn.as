@@ -19,20 +19,21 @@
             btnBG.gotoAndStop(1);
             expandIcon.visible = false;
             mouseChildren = false;
-			btnWidth = width;
-			//this.addEventListener(Event.ADDED_TO_STAGE, setBtn);
+			//btnWidth = width;
+            this.addEventListener(Event.ADDED_TO_STAGE, setBtn);
 		}
 
-        public function setBtn():void {
-			
-			//this.removeEventListener(Event.ADDED_TO_STAGE, setBtn);
-			
+        public function setBtn(e:Event):void {
+
+            this.removeEventListener(Event.ADDED_TO_STAGE, setBtn);
+
 			var type:uint = int(this.name.substr(3,1));
 			btnBG.width = btnWidth;
             btnIcon.gotoAndStop(type);
 			btnIcon.x = btnWidth - 3;
 			btnIcon.y = 10;
-			
+            expandIcon.x = btnWidth - 70;
+
             currentBtn = type;
             mouseChildren = false;
 

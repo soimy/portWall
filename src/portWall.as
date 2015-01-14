@@ -1,6 +1,5 @@
 ﻿package {
 
-	import fl.controls.Slider;
     import flash.display.MovieClip;
     import flash.system.Security;
     import flash.system.System;
@@ -100,6 +99,15 @@
             errWin = new ErrorWin();
             wallScreen = new bigScreen();
 
+            // Nav setup section
+            arrowL.rotation = 0;
+            arrowR.rotation = 180;
+            arrowL.mouseChildren = arrowR.mouseChildren = false;
+
+            arrowL.filters = shadowFilters;
+            arrowR.filters = shadowFilters;
+
+
             //prelog.btn_back.addEventListener(MouseEvent.CLICK, onPrelogBack);
         }
 
@@ -161,17 +169,21 @@
             var tl: TimelineLite = new TimelineLite();
             tl.staggerFrom([titlebar, prelog], 0.5, {
                 alpha: 0,
-                x: "-50",
+                x: "-150",
                 ease: Linear.easeOut
-            }, 0, "+=1");
+            }, 0.3, "+=1");
             tl.staggerFrom([fpBtn1, fpBtn2, fpBtn3, fpBtn4, fpBtn5], 0.5, {
                 alpha: 0,
-                x: "50",
+                x: "150",
                 ease: Linear.easeOut
-            }, 0, "-0.1");
+            }, 0.2, "-=0.1");
 
             fpBtn1.addEventListener(MouseEvent.CLICK, fpBtnClick);
-			
+            fpBtn2.addEventListener(MouseEvent.CLICK, fpBtnClick);
+            fpBtn3.addEventListener(MouseEvent.CLICK, fpBtnClick);
+            fpBtn4.addEventListener(MouseEvent.CLICK, fpBtnClick);
+            fpBtn5.addEventListener(MouseEvent.CLICK, fpBtnClick);
+
 			// Initialize randport screen
             wallScreen.siteUrl = siteUrl;
             wallScreen.interval = randPortInterval;
@@ -190,14 +202,14 @@
             var tl: TimelineLite = new TimelineLite();
             tl.staggerTo([fpBtn1, fpBtn2, fpBtn3, fpBtn4, fpBtn5], 0.5, {
                 alpha: 0,
-                x: "50",
+                x: "150",
                 ease: Linear.easeIn
-            }, 0);
+            }, 0.1);
             tl.staggerTo([prelog, titlebar], 0.5, {
                 alpha: 0,
-                x: "-50",
+                x: "-150",
                 ease: Linear.easeOut
-            }, 0, "-=0.2" ,init, [id]);
+            }, 0.2, "-=0.2" ,init, [id]);
         }
 
 
@@ -205,51 +217,46 @@
 
             this.gotoAndStop(2);
 
-            // Nav setup section
-            arrowL.rotation = 0;
-            arrowR.rotation = 180;
-            arrowL.y = arrowR.y = -500;
-            arrowL.x = 40; arrowR.x = 1880;
-            arrowL.mouseChildren = arrowR.mouseChildren = false;
             addChild(arrowL);
             addChild(arrowR);
+            addChild(detailCardMC);
+            addChild(signDetailMC);
 
-            arrowL.filters = shadowFilters;
-            arrowR.filters = shadowFilters;
-			
-			TweenLite.from(arrowL, 0.5, { x:"-50" } );
-			TweenLite.from(arrowR, 0.5, { x:"50" } );
+            arrowL.y = arrowR.y = -500;
+            arrowL.x = 40; arrowR.x = 1880;
+            detailCardMC.y = -1083;
+            detailCardMC.x = 2;
+            signDetailMC.y = -1083;
 
+            signDetailMC.x = 0;
             // Detail UI setup section
             detailCardMC.siteUrl = siteUrl;
             detailCardMC.isDiag = isDiag;
-            detailCardMC.y = -1083;
-            detailCardMC.x = 2;
-            addChild(detailCardMC);
 
             // signDetail UI setup section
             signDetailMC.siteUrl = siteUrl;
             signDetailMC.editable = false;
-            signDetailMC.y = -1083;
-            signDetailMC.x = 0;
-            addChild(signDetailMC);
+
+			TweenLite.from(arrowL, 0.5, { x:"-80" } );
+			TweenLite.from(arrowR, 0.5, { x:"80" } );
 
             // Button setup section
 			navbtns = new Vector.<nav_btn>;
-			
+            navbtnLayer.removeChildren();
+
 			if (userClass == 5) {
 				var btn_back:nav_btn = new nav_btn();
 				btn_back.name = "btn5";
 				navbtns.push(btn_back);
 				btn_back.btnWidth = 382;
-				addChild(btn_back);
+				navbtnLayer.addChild(btn_back);
 				btn_back.x = frameWidth - btn_back.btnWidth - btnMargin;
-				btn_back.y = 1030;
-				TweenLite.from(btn_back, 0.5, { y:"50", ease:Linear.easeOut } );
+				//btn_back.y = 1030;
+				TweenLite.from(btn_back, 0.3, { y:"50", ease:Linear.easeOut } );
 				initCard(userClass, "sign");
 				return;
 			}
-			
+
 			for (var i:uint = 1; i <= 5; i++) {
 				var btn:nav_btn = new nav_btn();
 				btn.name = "btn" + i;
@@ -257,15 +264,15 @@
 				if (userClass == 3 || userClass == 4 && i == 4) continue;
 				navbtns.push(btn);
 			}
-			
+
 			for (var i:uint = 0; i < navbtns.length; i++) {
 				var btnNum = navbtns.length;
 				var btnWidth = (frameWidth - btnMargin) / btnNum - btnMargin;
 				navbtns[i].btnWidth = btnWidth;
-				addChild(navbtns[i]);
+				navbtnLayer.addChild(navbtns[i]);
 				navbtns[i].x = (btnMargin + btnWidth) * i + btnMargin;
-				navbtns[i].y = 1030;
-				TweenLite.from(navbtns[i], 0.5, { y:"50", ease:Linear.easeOut } );
+				//navbtns[i].y = frameHeight - 135;
+				TweenLite.from(navbtns[i], 0.3, { y:"140", ease:Linear.easeOut, delay:i*0.15 } );
 			}
 
 
@@ -405,7 +412,7 @@
 
 
             if(currentQueryType == "vip")
-                queryImpl(queryType, sortType, currentKeyword);
+                queryImpl(currentUserClass, queryType, sortType, currentKeyword);
             else if(currentQueryType == "sign"){
                 drawSign();
 
@@ -536,7 +543,7 @@
 				var gpMC:MovieClip;
 
                 // if gpMC not created
-                if(currentCardId == 0){
+                if(currentCardId == 0 && usrCount){
                     gpMC = new MovieClip();
                     var gpLabel:groupLabel = new groupLabel();
                     var gpName = gp.@id;
@@ -648,6 +655,7 @@
             currentPosX[0] += allLabel.width + labelMarginX;
 
             for each(var gp:XML in gpList){
+                if(gp.user.length() == 0) continue;
                 var gpName:String = gp.@id;
                 if(gpName == "vip") continue;
 
@@ -736,8 +744,38 @@
 
                 if (e.target.name == "btn5") {
 					// return to frontpage
-					gotoAndStop(1);
-					initFp();
+                    TweenLite.to(cardLayer, 0.5, {y: -frameHeight,
+                        onComplete: function(){
+                            cardLayer.removeChildren();
+                            cardLayer.x = 0;
+                        }} );
+
+                    for(var i:uint = 0; i < navbtns.length-1; i++){
+                        TweenLite.to(navbtns[i], 0.3, {y:"140", ease:Linear.easeIn, delay:0.15*i})
+                    }
+                    TweenLite.to(
+                        navbtns[navbtns.length-1],
+                        0.3,
+                        {
+                            y:"140",
+                            ease:Linear.easeIn,
+                            delay:0.15*navbtns.length,
+                            onComplete: function(){
+                                queryInProgress = false;
+                                gotoAndStop(1);
+                                initFp();
+                            }
+                        });
+
+                    TweenLite.to(arrowL, 0.5, { x:"-80" } );
+                    TweenLite.to(arrowR, 0.5, { x:"80",
+                        onComplete: function(){
+                            removeChild(arrowL);
+                            removeChild(arrowR);
+                            removeChild(detailCardMC);
+                            removeChild(signDetailMC);
+                        } } );
+
                     return;
                 }
 
@@ -760,12 +798,12 @@
                 var sort:String = e.target.sortType;
                 var keyword:String = e.target.keyword;
                 if(isDiag) trace("[portWall] Switch Querytype to :" + sort);
-				
+
 				for each (var navbtn:nav_btn in navbtns) {
 					if (navbtn.name != "btn5")
 						navbtn.setActive(false);
 				}
-                
+
 				e.target.setActive(true);
                 initCard(currentUserClass, searchType, sort);
             }

@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <xml>
     <siteUrl>
-        http://192.168.96.200
+        http://192.168.1.200
     </siteUrl>
     <delay>
         1
     </delay>
     <signAutoShow>
-        0
+        1
     </signAutoShow>
     <isDiag>
         1

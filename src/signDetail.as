@@ -185,7 +185,7 @@
             removeChild(loadMC);
             TweenLite.to(this, 0.5, {y:-1083});
             MovieClip(this.parent).queryInProgress = false;
-            MovieClip(this.parent).initCard("sign");
+            MovieClip(this.parent).initCard(5, "sign");
         }
 
         public static function encode(ba:ByteArray):String {

@@ -27,10 +27,9 @@
 
         private function onClick(e:MouseEvent):void {
             restartBtn.removeEventListener(MouseEvent.CLICK, onClick);
-            TweenLite.to(this, 0.5, {y:-500, onComplete:function(){ 
-                    this.parent.removeChild(this); 
-                }});
-            MovieClip(root).initCard("all", "py");
+            TweenLite.to(this, 0.5, {y:-500});
+			MovieClip(root).gotoAndStop(1);
+            MovieClip(root).initFp();
             MovieClip(root).queryInProgress = false;
         }
 
