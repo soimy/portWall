@@ -19,7 +19,7 @@
         public var frameHeight:uint = 1080;
         public var pixelAspect:Number = 1.25;
 
-        public var interval:uint = 1; // Interval in second for portrait change
+        public var interval:uint = 5; // Interval in second for portrait change
         public var siteUrl:String = "http://192.168.96.200";
         public var queryUrl:String = "/xml/Default.aspx?searchtype=wall";
         public var tweenSpeed:Number = 1;

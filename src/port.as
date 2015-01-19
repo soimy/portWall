@@ -4,6 +4,7 @@
     import flash.system.Security;
     import flash.events.*;
     import flash.net.*;
+    import flash.geom.Matrix;
 
     import com.greensock.*;
     import com.greensock.easing.*;
@@ -77,8 +78,8 @@
             this.removeChildren();
 
             var tmpBMD:BitmapData = e.target.content.bitmapData;
-            var scale:Number = Math.max(frameWidth/portImg.width*pixelAspect, frameHeight/portImg.height);
-            portImg = new Bitmap(drawScale(tmpBMD, scale/pixelAspect, scale));
+            var scale:Number = Math.max(frameWidth/e.target.content.width*pixelAspect, frameHeight/e.target.content.height);
+            portImg = drawScale(tmpBMD, scale/pixelAspect, scale);
 
             this.addChild(portImg);
             //portImg.width *= scale/pixelAspect;
@@ -107,8 +108,8 @@
             EventDispatcher(e.target).removeEventListener(e.type, arguments.callee);
             this.removeChildren();
             var tmpBMD:BitmapData = e.target.content.bitmapData;
-            var scale:Number = Math.max(frameWidth/portImg.width*pixelAspect, frameHeight/portImg.height);
-            portImg = new Bitmap(drawScale(tmpBMD, scale/pixelAspect, scale));
+            var scale:Number = Math.max(frameWidth/e.target.content.width*pixelAspect, frameHeight/e.target.content.height);
+            portImg = drawScale(tmpBMD, scale/pixelAspect, scale);
             addChild(portImg);
             portImg.x = -portImg.width/2 + frameWidth/2 + portShiftX;
             portImg.y = -portImg.height/2 + frameHeight/2 + portShiftY;
@@ -121,7 +122,7 @@
             if(isDiag) trace("[port] URL Load Error : " + imgUrl);
         }
 
-        private function drawScale(bigBMD:BitmapData, scaleX:Number, scaleY:Number):BitmapData {
+        private function drawScale(bigBMD:BitmapData, scaleX:Number, scaleY:Number):Bitmap {
             var mat:Matrix = new Matrix();
             mat.scale(scaleX, scaleY);
             var smallBMD:BitmapData = new BitmapData(bigBMD.width * scaleX, bigBMD.height * scaleY, true, 0x000000);

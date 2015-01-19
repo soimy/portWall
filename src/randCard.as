@@ -70,9 +70,23 @@
 
             portName_txt.text = portName;
             randtxt.portDiv_txt.text = portDiv;
-            randtxt.portYr_txt.text = String(cardXML.date);
+            //randtxt.portYr_txt.text = String(cardXML.date);
             randtxt.portIntro_txt.autoSize = TextFieldAutoSize.LEFT;
             randtxt.portIntro_txt.text = String(cardXML.intro1);
+            switch(String(cardXML.id).substr(0,1)){
+                case "G":
+                    randtxt.portYr_txt.text = "中国工程院院士";
+                    break;
+                case "Z":
+                    randtxt.portYr_txt.text = "中国科学院院士";
+                    break;
+                case "C":
+                    randtxt.portYr_txt.text = "长江学者";
+                    break;
+                case "Y":
+                    randtxt.portYr_txt.text = "中原学者";
+                    break;
+            }
 
             // Apply mask for text info
             var mask:Shape = new Shape();
