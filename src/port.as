@@ -13,6 +13,8 @@
 		public var gridid:uint;
         public var frameWidth:uint = 320;
         public var frameHeight:uint = 540;
+        public var pixelAspect:Number = 1.0;
+        //public var fillMode:uint = 0; // 0 = fit, 1 = scale
 
         public var imgUrl:String = "/img/randport_undefined.jpg";
         public var preloadMC:MovieClip;
@@ -20,7 +22,7 @@
         public var portShiftX:int = 0;
         public var portShiftY:int = 0;
 
-        public var portImg:DisplayObject;
+        public var portImg:Bitmap;
 
         public var isDiag:Boolean;
 
@@ -47,8 +49,12 @@
 
             if(preloadMC != null){
                 this.addChild(preloadMC);
-                var scale:Number = Math.max(frameWidth/preloadMC.width, frameHeight/preloadMC.height);
-                preloadMC.width *= scale;
+                var scale:Number;
+                //if(fillMode == 0)
+                    //scale = Math.max(frameWidth/preloadMC.width*pixelAspect, frameHeight/preloadMC.height);
+                //else
+                scale = Math.max(frameWidth/preloadMC.width*pixelAspect, frameHeight/preloadMC.height);
+                preloadMC.width *= scale/pixelAspect;
                 preloadMC.height *= scale;
                 preloadMC.x = -preloadMC.width/2 + frameWidth/2 + portShiftX;
                 preloadMC.y = -preloadMC.height/2 + frameHeight/2 + portShiftY;
@@ -70,11 +76,13 @@
             EventDispatcher(e.target).removeEventListener(e.type, arguments.callee);
             this.removeChildren();
 
-            portImg = e.target.content;
+            var tmpBMD:BitmapData = e.target.content.bitmapData;
+            var scale:Number = Math.max(frameWidth/portImg.width*pixelAspect, frameHeight/portImg.height);
+            portImg = new Bitmap(drawScale(tmpBMD, scale/pixelAspect, scale));
+
             this.addChild(portImg);
-            var scale:Number = Math.max(frameWidth/portImg.width, frameHeight/portImg.height);
-            portImg.width *= scale;
-            portImg.height *= scale;
+            //portImg.width *= scale/pixelAspect;
+            //portImg.height *= scale;
             portImg.x = -portImg.width/2 + frameWidth/2 + portShiftX;
             portImg.y = -portImg.height/2 + frameHeight/2 + portShiftY;
             addChild(frameMask);
@@ -98,21 +106,28 @@
         public function onPushLoaded(e:Event):void {
             EventDispatcher(e.target).removeEventListener(e.type, arguments.callee);
             this.removeChildren();
-            var newPortDO:DisplayObject = e.target.content;
-            addChild(newPortDO);
-            var scale:Number = Math.max(frameWidth/newPortDO.width, frameHeight/newPortDO.height);
-            newPortDO.width *= scale;
-            newPortDO.height *= scale;
-            newPortDO.x = -newPortDO.width/2 + frameWidth/2 + portShiftX;
-            newPortDO.y = -newPortDO.height/2 + frameHeight/2 + portShiftY;
+            var tmpBMD:BitmapData = e.target.content.bitmapData;
+            var scale:Number = Math.max(frameWidth/portImg.width*pixelAspect, frameHeight/portImg.height);
+            portImg = new Bitmap(drawScale(tmpBMD, scale/pixelAspect, scale));
+            addChild(portImg);
+            portImg.x = -portImg.width/2 + frameWidth/2 + portShiftX;
+            portImg.y = -portImg.height/2 + frameHeight/2 + portShiftY;
             addChild(frameMask);
-            newPortDO.mask = frameMask;
-            portImg = newPortDO;
+            portImg.mask = frameMask;
         }
 
         private function onError(err:IOErrorEvent):void {
             EventDispatcher(err.target).removeEventListener(err.type, arguments.callee);
             if(isDiag) trace("[port] URL Load Error : " + imgUrl);
+        }
+
+        private function drawScale(bigBMD:BitmapData, scaleX:Number, scaleY:Number):BitmapData {
+            var mat:Matrix = new Matrix();
+            mat.scale(scaleX, scaleY);
+            var smallBMD:BitmapData = new BitmapData(bigBMD.width * scaleX, bigBMD.height * scaleY, true, 0x000000);
+            smallBMD.draw(bigBMD, mat, null, null, null, true);
+            var result:Bitmap = new Bitmap(smallBMD, PixelSnapping.NEVER, true);
+            return result;
         }
 	}
 

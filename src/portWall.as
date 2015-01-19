@@ -261,7 +261,7 @@
 				var btn:nav_btn = new nav_btn();
 				btn.name = "btn" + i;
 				// Ignore the research division button for userClass 3/4
-				if (userClass == 3 || userClass == 4 && i == 4) continue;
+				if ((userClass == 3 || userClass == 4) && i == 4) continue;
 				navbtns.push(btn);
 			}
 
@@ -786,8 +786,8 @@
                         if(currentQueryType == "all")
                             drawLabel();
                     }else{
-                        TweenLite.to(cardLayer, 0.5, {y: 0, onComplete:testSlide});
-                        TweenLite.to(labelLayer, 0.5, {y: frameHeight});
+                        TweenLite.to(cardLayer, 0.5, {y: 0});
+                        TweenLite.to(labelLayer, 0.5, {y: frameHeight, onComplete:testSlide});
                     }
                     return;
                 }
@@ -829,7 +829,7 @@
             else
                 arrowR.y = 485;
 
-            if((arrowL.y>0 || arrowR.y>0) && labelLayer.y < frameHeight)
+            if((arrowL.y>0 || arrowR.y>0) && labelLayer.y < frameHeight - 10)
                 arrowR.y = arrowL.y = -500;
 
             if(cardLayer.x < - marginX * Math.ceil(loadedCard / 2) + 2 * frameWidth
