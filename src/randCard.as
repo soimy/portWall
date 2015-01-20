@@ -69,22 +69,22 @@
             addChild(portPic);
 
             portName_txt.text = portName;
-            randtxt.portDiv_txt.text = portDiv;
+            portDiv_txt.text = portDiv;
             //randtxt.portYr_txt.text = String(cardXML.date);
             randtxt.portIntro_txt.autoSize = TextFieldAutoSize.LEFT;
-            randtxt.portIntro_txt.text = String(cardXML.intro1);
+            randtxt.portIntro_txt.text = String(cardXML.introduction);
             switch(String(cardXML.id).substr(0,1)){
                 case "G":
-                    randtxt.portYr_txt.text = "中国工程院院士";
+                    portYr_txt.text = "中国工程院院士";
                     break;
                 case "Z":
-                    randtxt.portYr_txt.text = "中国科学院院士";
+                    portYr_txt.text = "中国科学院院士";
                     break;
                 case "C":
-                    randtxt.portYr_txt.text = "长江学者";
+                    portYr_txt.text = "长江学者";
                     break;
                 case "Y":
-                    randtxt.portYr_txt.text = "中原学者";
+                    portYr_txt.text = "中原学者";
                     break;
             }
 
@@ -92,11 +92,11 @@
             var mask:Shape = new Shape();
             mask.graphics.lineStyle(1, 0x000000);
             mask.graphics.beginFill(0x000000);
-            mask.graphics.drawRect(0, 0, 310, 280);
+            mask.graphics.drawRect(0, 0, 310, 215);
             mask.graphics.endFill();
             addChild(mask);
             mask.x = 265;
-            mask.y = 75;
+            mask.y = 140;
             randtxt.mask = mask;
 
             // TODO: Add mask blur filter

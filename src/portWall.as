@@ -190,6 +190,9 @@
             wallScreen.isDiag = false;
             wallScreen.row = 5;
             wallScreen.col = 3;
+            wallScreen.frameWidth = 2560;
+            wallScreen.frameHeight = 1080;
+            wallScreen.pixelAspect = 1.25;
             addChild(wallScreen);
 			wallScreen.x = frameWidth;
 			wallScreen.y = 0;
@@ -223,7 +226,7 @@
             addChild(signDetailMC);
 
             arrowL.y = arrowR.y = -500;
-            arrowL.x = 40; arrowR.x = 1880;
+            arrowL.x = 58; arrowR.x = 1862;
             detailCardMC.y = -1083;
             detailCardMC.x = 2;
             signDetailMC.y = -1083;

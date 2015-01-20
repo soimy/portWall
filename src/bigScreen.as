@@ -168,9 +168,10 @@
 
         private function onTween(tweenCard:randCard):void {
             var gridid:uint = tweenCard.gridid;
-            this.removeChild(portList[gridid]);
+            removeChild(portList[gridid]);
 			trace("Removing : "+gridid);
             portList[gridid] = tweenCard;
+			//removeChild(tweenMask);
         }
 
         private function getPort():XML {

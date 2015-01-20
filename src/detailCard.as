@@ -5,6 +5,7 @@
     import flash.system.Security;
     import flash.events.*;
     import flash.net.*;
+	import flash.text.TextFieldAutoSize;
 
     import com.greensock.*;
     import com.greensock.easing.*;
@@ -38,6 +39,8 @@
 
 		private var vid:Video;
 		private var ns:NetStream;
+        private var tl:TimelineLite;
+        private var scrollSpeed:Number = 20; // 20px per second
 
         public var isDiag:Boolean = true;
 
@@ -109,6 +112,8 @@
             //pushIntro(String(detailXML.introduction));
             setBtnActive(0);
 
+
+            // Big Screen section
             // Initialize the video frame
             movieUrl = siteUrl + String(detailXML.movie);
 			if(isDiag) trace("[detailCard] Streaming video : "+movieUrl);
@@ -124,11 +129,56 @@
             vid = new Video();
             vid.attachNetStream(ns);
             addChild(vid);
-            vid.x = 1920;
+            vid.x = 1920 + 512;
             vid.y = 0;
-            vid.width = 1920;
+            vid.width = 1536;
             vid.height = 1080;
 
+            // Bigscreen portrait
+            var bigPort:port = new port();
+            bigPort.frameWidth = 512;
+            bigPort.frameHeight = 900;
+            bigPort.imgUrl = portUrl;
+            bigPort.preloadMC = new portDef();
+            detailPortMC.addChild(bigPort);
+            bigPort.x = 1921;
+
+            bigName_txt.text = portName;
+            switch(String(detailXML.id).substr(0,1)){
+                case "G":
+                    bigType_txt.text = "中国工程院院士";
+                    break;
+                case "Z":
+                    bigType_txt.text = "中国科学院院士";
+                    break;
+                case "C":
+                    bigType_txt.text = "长江学者";
+                    break;
+                case "Y":
+                    bigType_txt.text = "中原学者";
+                    break;
+            }
+            bigDiv_txt.text = portDiv;
+            bigIntro_txt.autoSize = TextFieldAutoSize.LEFT
+            bigIntro_txt.htmlText = String(detailXML.introduction);
+
+            // Setup bigIntro scrolling animation
+            if(bigIntro_txt.height > 1000){
+                var dist:Number = bigIntro_txt.height - 1000;
+                tl = new TimelineLite();
+                tl.to(bigIntro_txt, 1, {alpha:1});
+                tl.to(bigIntro_txt, dist / scrollSpeed, {
+                    y:bigIntro_txt.y - dist,
+                    ease: Linear.easeOut
+                }, "+=5");
+                tl.to(bigIntro_txt, 1, {
+                    alpha:0,
+                    onComplete: function(){
+                        bigIntro_txt.y = 50;    
+                        tl.restart();
+                    }
+                }, "+=2");
+            }
         }
 
         private function setBtnActive(id:uint){
@@ -245,6 +295,7 @@
                 if(isDiag) trace("[detailCard] back");
                 TweenLite.to(this, 0.5, {y:-1083, onComplete:disableVid});
                 MovieClip(this.parent).queryInProgress = false;
+                bigIntro_txt.text = "";
                 return;
             }
 
@@ -266,6 +317,9 @@
                 ns.close();
                 ns = null;
             }
+            tl.stop();
+            bigIntro_txt.y = 50;
+            bigIntro_txt.alpha = 1;
         }
 
         private function testSlide():void {
