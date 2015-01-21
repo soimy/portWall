@@ -61,7 +61,7 @@
             portPic.frameHeight = 316;
             portPic.isDiag = isDiag;
             portPic.preloadMC = new portDef();
-            portPic.portShiftY = 50;
+            portPic.portShiftY = 40;
             portPic.imgUrl = portUrl;
             portRoot.addChild(portPic);
             portRoot.mask = pMask;

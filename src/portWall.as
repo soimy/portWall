@@ -376,10 +376,10 @@
             if(xmlData.group == undefined && xmlData.user == undefined && currentQueryType != "sign"){
                 trace("[portWall] XML data error!");
                 trace(xmlData);
-                addChild(errWin);
-                errWin.restartBtn.addEventListener(MouseEvent.CLICK, onRestart);
+                //addChild(errWin);
+                //errWin.restartBtn.addEventListener(MouseEvent.CLICK, onRestart);
                 queryInProgress = false;
-                return;
+                //return;
             }
 
             if(xmlData.group != undefined)

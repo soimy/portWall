@@ -140,8 +140,9 @@
             bigPort.frameHeight = 900;
             bigPort.imgUrl = portUrl;
             bigPort.preloadMC = new portDef();
+            bigPort.pixelAspect = 1.25;
             detailPortMC.addChild(bigPort);
-            bigPort.x = 1921;
+            bigPort.x = 1920;
 
             bigName_txt.text = portName;
             switch(String(detailXML.id).substr(0,1)){
