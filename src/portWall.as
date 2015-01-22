@@ -350,6 +350,7 @@
                       finalQueryCmd += "&keyword=" + keyword ;
                       finalQueryCmd += "&sort=" + sort;
             }
+            finalQueryCmd += "&nocache="+ new Date().getTime();
 
             currentQueryType = searchType;
 			currentUserClass = userClass;
@@ -706,7 +707,7 @@
                 var pid:String = e.target.portId;
                 trace("[portWall] Selected PortId: " + pid);
                 var detailQueryCmd:String = "/xml/Default.aspx?searchtype=detail&keyword="+pid;
-
+                detailQueryCmd += "&nocache="+ new Date().getTime();
                 var xmlLoader:URLLoader = new URLLoader();
                 xmlLoader.load(new URLRequest(siteUrl+detailQueryCmd));
                 xmlLoader.addEventListener(Event.COMPLETE, onDetailXmlLoad);

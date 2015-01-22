@@ -23,6 +23,7 @@
         public var siteUrl:String = "http://192.168.96.200";
         public var queryUrl:String = "/xml/Default.aspx?searchtype=wall";
         public var tweenSpeed:Number = 1;
+        public var utDef:Array = ["G","Z","C","Y"]; // id start letter defination
 
         private var portList:Array;
         private var xmlData:XML;
@@ -33,6 +34,7 @@
         private var portW:uint;
         private var tweenMask:Shape;
         private var lastRandid:uint;
+        private var lastGridid:uint;
 
         public var isDiag:Boolean = true;
 
@@ -50,7 +52,7 @@
             }
 
             var xmlLoader:URLLoader = new URLLoader();
-            xmlLoader.load(new URLRequest(siteUrl+queryUrl));
+            xmlLoader.load(new URLRequest(siteUrl+queryUrl+ new Date().getTime()));
             xmlLoader.addEventListener(Event.COMPLETE, onXmlLoad);
         }
 
@@ -59,15 +61,48 @@
             if(isDiag) trace("[bigScreen] XML Loaded.")
 
             xmlData = new XML(e.target.data);
-            userPool = new Array();
+            userPool = new Array(4);
+            userPool[0] = new Array();
             for each (var user:XML in xmlData.user){
                 var tmpUrl:String = String(user.portrait);
                 if(tmpUrl != ""){
                     var finalUrl:String = siteUrl + tmpUrl;
                     if(isDiag)trace("[bigScreen] Added : "+finalUrl);
-                    userPool.push(user);
+                    userPool[0].push(user);
                 }
             }
+
+            for(var i:uint = 1; i<5; i++)
+                userPool[i] = new Array();
+
+            for each(user in userPool[0]){
+                switch(String(user.type).substr(0,1)){
+                    case "在豫工作院士":
+                        userPool[1].push(user);
+                        if(isDiag) trace("[bigScreen] Pool#1 Added : " + String(user.id));
+                        break;
+                    case "豫籍院士":
+                        userPool[2].push(user);
+                        if(isDiag) trace("[bigScreen] Pool#2 Added : " + String(user.id));
+                        break;
+                    case "长江学者":
+                        userPool[3].push(user);
+                        if(isDiag) trace("[bigScreen] Pool#3 Added : " + String(user.id));
+                        break;
+                    case "中原学者":
+                        userPool[4].push(user);
+                        if(isDiag) trace("[bigScreen] Pool#4 Added : " + String(user.id));
+                        break;
+                }
+            }
+
+            var tmpId:uint = 0;
+            if(isDiag){
+                for each (var tmpPool:Array in userPool)
+                    trace("[bigScreen] Pool#"+tmpId+" length :" + tmpPool.length);
+            }
+
+            
             init();
         }
 
@@ -174,12 +209,32 @@
 			//removeChild(tweenMask);
         }
 
-        private function getPort():XML {
+        private function getPort(ut:uint = 0):XML {
             if(userPool.length == 0)
-                return new XML("img/randport_undefined.jpg");
+                return new XML("/img/randport_undefined.jpg");
 
             var rand:uint = Math.random() * userPool.length;
-            var randXML:XML = userPool[rand];
+            var randXML:XML;
+            switch(ut){
+                case 0:
+                    break;
+                case 1:
+                case 2:
+                    while(  String(userPool[rand].id).substr(0,1) != utDef[1] &&
+                            String(userPool[rand].id).substr(0,1) != utDef[2]  ){
+                        rand = Math.random() * userPool.length;
+                    }
+                    break;
+                case 3:
+                case 4:
+                    while(  String(userPool[rand].id).substr(0,1) != utDef[3] &&
+                            String(userPool[rand].id).substr(0,1) != utDef[4]  ){
+                        rand = Math.random() * userPool.length;
+                    }
+                    break;
+            }
+
+            randXML = userPool[rand];
             if(isDiag) trace("[randPort] randomize port ["+rand+"/"+userPool.length+"] "+ randXML.portrait);
             userPool.splice(rand,1);
             return randXML;
