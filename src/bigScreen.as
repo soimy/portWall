@@ -8,6 +8,7 @@
     import flash.net.*;
     import flash.utils.Timer;
     import flash.geom.Point;
+    import flash.geom.PerspectiveProjection;
 
     import com.greensock.*;
     import com.greensock.easing.*;
@@ -24,6 +25,7 @@
         public var siteUrl:String = "http://192.168.96.200";
         public var queryUrl:String = "/xml/Default.aspx?searchtype=wall";
         public var tweenSpeed:Number = 1;
+        public var tweenDelay:Number = 0.4;
         public var utDef:Array = ["G","Z","C","Y"]; // id start letter defination
 
         private var portList:Array;
@@ -135,19 +137,25 @@
                     randp.isDiag = false;
                     randp.pixelAspect = pixelAspect;
                     var cardHolder:MovieClip = new MovieClip();
-                    cardHolder.addChild(randp);
+                    var portHolder:MovieClip = new MovieClip();
+                    portHolder.addChild(randp);
                     randp.x = - portW/2;
                     randp.y = - portH/2;
+                    cardHolder.addChild(portHolder);
+                    portHolder.x = portW/2;
+                    portHolder.y = portH/2;
                     portList.push(cardHolder);
                     addChild(cardHolder);
-                    cardHolder.x = portW*i + portW/2;
-                    cardHolder.y = portH*j + portH/2;
+                    cardHolder.x = portW*i ;
+                    cardHolder.y = portH*j ;
+                    cardHolder.transform.perspectiveProjection= new PerspectiveProjection();
+                    cardHolder.transform.perspectiveProjection.projectionCenter = new Point(portW/2, portH/2);
 
                 }
             }
 
-            if(interval < tweenSpeed*col*row + 1 )
-                interval = tweenSpeed*col*row + 1;
+            if(interval < tweenDelay*col*row + 1 )
+                interval = tweenDelay*col*row + 1;
             if(isDiag) trace("[bigScreen] Refresh interval : "+interval);
 
             randTimer = new Timer(interval*1000);
@@ -156,7 +164,14 @@
         }
 
         private function onSlide(e:TimerEvent):void {
-            flipCard(currentPool);
+            //flipCard(currentPool);
+            refreshPage(currentPool);
+        }
+
+        private function refreshPage(ut:uint):void {
+            for(var gridid = 0; gridid < col*row; gridid++){
+                flipCard(ut, gridid);
+            }
         }
 
         public function flipCard(ut:uint, gridid:uint = 0):void
@@ -178,37 +193,40 @@
             //tweenMask.x = portW * currentRow + portW/2;
             //tweenMask.y = portH * currentCol + portH/2;
 
-            var cardHolder:MovieClip = new MovieClip();
-            cardHolder.addChild(tweenCard);
+            var cardHolder:MovieClip = portList[gridid];
+            var portHolder:MovieClip = new MovieClip();
+            portHolder.addChild(tweenCard);
             tweenCard.x = - portW/2;
             tweenCard.y = - portH/2;
-            addChild(cardHolder);
-            cardHolder.x = portW * currentRow + portW/2;
-            cardHolder.y = portH * currentCol + portH/2;
-            //tweenCard.mask = tweenMask;
+            portHolder.visible = false;
+            cardHolder.addChild(portHolder);
+            portHolder.x = portW/2;
+            portHolder.y = portH/2;
 
-            this.transform.perspectiveProjection.projectionCenter = new Point(cardHolder.x, cardHolder.y);
 
             var tl:TimelineLite = new TimelineLite();
-            tl.to(portList[gridid], tweenSpeed * 0.35, {
+            tl.to(cardHolder.getChildAt(0), tweenSpeed * 0.35, {
+                delay: gridid * tweenDelay,
                 rotationX: 90,
                 ease:Quad.easeIn
             });
 
-            tl.from(cardHolder, tweenSpeed * .65, {
+            tl.from(portHolder, tweenSpeed * .65, {
                 rotationX: -90,
                 ease:Back.easeOut,
+                onStart:function(){portHolder.visible=true},
                 onComplete:onTween,
-                onCompleteParams:[cardHolder, gridid]
+                onCompleteParams:[gridid]
             });
         }
 
-        private function onTween(holder:MovieClip, gridid:uint):void {
-            removeChild(portList[gridid]);
+        private function onTween(gridid:uint):void {
+            //removeChild(portList[gridid]);
+            portList[gridid].removeChildAt(0);
 			//trace("Removing : "+gridid);
-            portList[gridid] = holder;
-            if(gridid < row * col - 1)
-                flipCard(currentPool, gridid + 1);
+            //portList[gridid] = holder;
+            //if(gridid < row * col - 1)
+                //flipCard(currentPool, gridid + 1);
         }
 
         private function getPort(ut:uint = 0):XML {
