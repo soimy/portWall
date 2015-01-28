@@ -7,6 +7,7 @@
     import flash.events.*;
     import flash.net.*;
     import flash.utils.Timer;
+    import flash.geom.Point;
 
     import com.greensock.*;
     import com.greensock.easing.*;
@@ -29,12 +30,17 @@
         private var xmlData:XML;
         private var userPool:Array;
         private var randTimer:Timer;
+        private var poolPointer:Array;
+        private var currentPointer:uint;
+        private var currentPool:uint = 0;
 
         private var portH:uint;
         private var portW:uint;
         private var tweenMask:Shape;
         private var lastRandid:uint;
         private var lastGridid:uint;
+
+        //private var tl:TimelineLite;
 
         public var isDiag:Boolean = true;
 
@@ -52,7 +58,7 @@
             }
 
             var xmlLoader:URLLoader = new URLLoader();
-            xmlLoader.load(new URLRequest(siteUrl+queryUrl+ new Date().getTime()));
+            xmlLoader.load(new URLRequest(siteUrl+queryUrl+"&nocache="+ new Date().getTime()));
             xmlLoader.addEventListener(Event.COMPLETE, onXmlLoad);
         }
 
@@ -61,54 +67,53 @@
             if(isDiag) trace("[bigScreen] XML Loaded.")
 
             xmlData = new XML(e.target.data);
-            userPool = new Array(4);
-            userPool[0] = new Array();
-            for each (var user:XML in xmlData.user){
-                var tmpUrl:String = String(user.portrait);
+            userPool = new Array();
+            var tmpPool = new Array(4);
+            for(var i:uint = 0; i<4; i++)
+                tmpPool[i] = new Array();
+
+            for each (var users:XML in xmlData.user){
+                var tmpUrl:String = String(users.portrait);
                 if(tmpUrl != ""){
                     var finalUrl:String = siteUrl + tmpUrl;
                     if(isDiag)trace("[bigScreen] Added : "+finalUrl);
-                    userPool[0].push(user);
+                    switch(String(users.types)){
+                        case "在豫工作院士":
+                            tmpPool[0].push(users);
+                            break;
+                        case "豫籍院士":
+                            tmpPool[1].push(users);
+                            break;
+                        case "长江学者":
+                            tmpPool[2].push(users);
+                            break;
+                        case "中原学者":
+                            tmpPool[3].push(users);
+                            break;
+                    }
                 }
             }
 
-            for(var i:uint = 1; i<5; i++)
-                userPool[i] = new Array();
+            poolPointer = [0,0,0,0];
 
-            for each(user in userPool[0]){
-                switch(String(user.type).substr(0,1)){
-                    case "在豫工作院士":
-                        userPool[1].push(user);
-                        if(isDiag) trace("[bigScreen] Pool#1 Added : " + String(user.id));
-                        break;
-                    case "豫籍院士":
-                        userPool[2].push(user);
-                        if(isDiag) trace("[bigScreen] Pool#2 Added : " + String(user.id));
-                        break;
-                    case "长江学者":
-                        userPool[3].push(user);
-                        if(isDiag) trace("[bigScreen] Pool#3 Added : " + String(user.id));
-                        break;
-                    case "中原学者":
-                        userPool[4].push(user);
-                        if(isDiag) trace("[bigScreen] Pool#4 Added : " + String(user.id));
-                        break;
+            for(var tmpId:uint = 0; tmpId < tmpPool.length; tmpId++){
+                if(isDiag) trace("[bigScreen] Pool#"+tmpId+" length :" + tmpPool[tmpId].length);
+                poolPointer[tmpId+1] = tmpPool[tmpId].length + poolPointer[tmpId];
+				//trace(tmpPool[tmpId]);
+                for(i=0; i<tmpPool[tmpId].length; i++){
+                    userPool.push(tmpPool[tmpId][i]);
                 }
             }
+            if(isDiag) trace(poolPointer);
 
-            var tmpId:uint = 0;
-            if(isDiag){
-                for each (var tmpPool:Array in userPool)
-                    trace("[bigScreen] Pool#"+tmpId+" length :" + tmpPool.length);
-            }
-
-            
             init();
         }
 
         private function init():void {
             portW= frameWidth/row;
             portH= frameHeight/col;
+
+            //tl = new TimelineLite();
 
             // Apply mask for rand
             tweenMask = new Shape();
@@ -127,19 +132,23 @@
                     //randp.frameWidth = portW;
                     //randp.frameHeight = portH;
                     randp.cardXML = getPort();
-                    randp.isDiag = isDiag;
+                    randp.isDiag = false;
                     randp.pixelAspect = pixelAspect;
-
-                    portList.push(randp);
-                    addChild(randp);
-                    randp.x = portW*i;
-                    randp.y = portH*j;
+                    var cardHolder:MovieClip = new MovieClip();
+                    cardHolder.addChild(randp);
+                    randp.x = - portW/2;
+                    randp.y = - portH/2;
+                    portList.push(cardHolder);
+                    addChild(cardHolder);
+                    cardHolder.x = portW*i + portW/2;
+                    cardHolder.y = portH*j + portH/2;
 
                 }
             }
 
-            //for(var m=0; m<portList.length; m++)
-                //addChild(portList[m]);
+            if(interval < tweenSpeed*col*row + 1 )
+                interval = tweenSpeed*col*row + 1;
+            if(isDiag) trace("[bigScreen] Refresh interval : "+interval);
 
             randTimer = new Timer(interval*1000);
             randTimer.addEventListener(TimerEvent.TIMER, onSlide);
@@ -147,97 +156,93 @@
         }
 
         private function onSlide(e:TimerEvent):void {
-            var randid:uint = Math.random() * portList.length;
-            while(randid == lastRandid){
-                randid = Math.random() * portList.length;
-            } // Never repeat last random card
+            flipCard(currentPool);
+        }
 
-            if(isDiag) trace("[bigScreen] Rand on Port #"+randid);
-            //userPool.push(portList[randid].pushPort(getPort()));
-            var tmpXML:XML = getPort();
+        public function flipCard(ut:uint, gridid:uint = 0):void
+        {
+            var tmpXML:XML = getPort(ut);
             var tweenCard:randCard = new randCard();
             tweenCard.siteUrl = siteUrl;
             tweenCard.cardXML = tmpXML;
             tweenCard.pixelAspect = pixelAspect;
-            tweenCard.gridid = randid;
+            tweenCard.gridid = gridid;
+            tweenCard.isDiag = false;
 
-            var currentRow:uint = Math.floor(randid / col);
-            var currentCol:uint = randid % col;
+            var currentRow:uint = Math.floor(gridid / col);
+            var currentCol:uint = gridid % col;
+            //trace("Fliping R:"+currentRow+" C:"+currentCol);
 
             // Apply mask for rand
-            addChild(tweenMask);
-            tweenMask.x = portW * currentRow;
-            tweenMask.y = portH * currentCol;
+            //addChild(tweenMask);
+            //tweenMask.x = portW * currentRow + portW/2;
+            //tweenMask.y = portH * currentCol + portH/2;
 
-            addChild(tweenCard);
-            tweenCard.x = portW * currentRow;
-            tweenCard.y = portH * currentCol;
-            tweenCard.mask = tweenMask;
+            var cardHolder:MovieClip = new MovieClip();
+            cardHolder.addChild(tweenCard);
+            tweenCard.x = - portW/2;
+            tweenCard.y = - portH/2;
+            addChild(cardHolder);
+            cardHolder.x = portW * currentRow + portW/2;
+            cardHolder.y = portH * currentCol + portH/2;
+            //tweenCard.mask = tweenMask;
 
-            var direction:int = Math.random()*4;
-            var offsetX, offsetY:int;
-            if(isDiag) trace("[randPort] direction: "+direction);
-            if(direction == 0){
-                offsetX = 0;
-                offsetY = - portH;
-            }else if (direction == 1){
-                offsetX = - portW;
-                offsetY = 0;
-            }else if (direction == 2){
-                offsetX = 0;
-                offsetY = portH;
-            }else if (direction == 3){
-                offsetX = portW;
-                offsetY = 0;
-            }
-            TweenLite.from(tweenCard, tweenSpeed, {
-                x: tweenCard.x + offsetX,
-                y: tweenCard.y + offsetY,
-                onComplete:onTween,
-                onCompleteParams:[tweenCard]
+            this.transform.perspectiveProjection.projectionCenter = new Point(cardHolder.x, cardHolder.y);
+
+            var tl:TimelineLite = new TimelineLite();
+            tl.to(portList[gridid], tweenSpeed * 0.35, {
+                rotationX: 90,
+                ease:Quad.easeIn
             });
 
-            userPool.push(portList[randid].cardXML);
-            lastRandid = randid;
+            tl.from(cardHolder, tweenSpeed * .65, {
+                rotationX: -90,
+                ease:Back.easeOut,
+                onComplete:onTween,
+                onCompleteParams:[cardHolder, gridid]
+            });
         }
 
-        private function onTween(tweenCard:randCard):void {
-            var gridid:uint = tweenCard.gridid;
+        private function onTween(holder:MovieClip, gridid:uint):void {
             removeChild(portList[gridid]);
-			trace("Removing : "+gridid);
-            portList[gridid] = tweenCard;
-			//removeChild(tweenMask);
+			//trace("Removing : "+gridid);
+            portList[gridid] = holder;
+            if(gridid < row * col - 1)
+                flipCard(currentPool, gridid + 1);
         }
 
         private function getPort(ut:uint = 0):XML {
-            if(userPool.length == 0)
-                return new XML("/img/randport_undefined.jpg");
+            if(ut != currentPool){
+                switchPool(ut);
+                if(ut != 0)
+                    currentPointer = poolPointer[ut-1];
+                else
+                    currentPointer = 0;
+            }
 
-            var rand:uint = Math.random() * userPool.length;
-            var randXML:XML;
+            var tmpXML:XML = userPool[currentPointer++];
+
             switch(ut){
                 case 0:
+                    currentPointer %= userPool.length;
                     break;
                 case 1:
                 case 2:
-                    while(  String(userPool[rand].id).substr(0,1) != utDef[1] &&
-                            String(userPool[rand].id).substr(0,1) != utDef[2]  ){
-                        rand = Math.random() * userPool.length;
-                    }
+                    if(currentPointer > poolPointer[2] - 1)
+                        currentPointer = poolPointer[0];
                     break;
                 case 3:
                 case 4:
-                    while(  String(userPool[rand].id).substr(0,1) != utDef[3] &&
-                            String(userPool[rand].id).substr(0,1) != utDef[4]  ){
-                        rand = Math.random() * userPool.length;
-                    }
+                    if(currentPointer > userPool.length - 1)
+                        currentPointer = poolPointer[2];
                     break;
             }
 
-            randXML = userPool[rand];
-            if(isDiag) trace("[randPort] randomize port ["+rand+"/"+userPool.length+"] "+ randXML.portrait);
-            userPool.splice(rand,1);
-            return randXML;
+            return tmpXML;
+        }
+
+        private function switchPool(ut:uint):void {
+            currentPool = ut;
         }
 
 
