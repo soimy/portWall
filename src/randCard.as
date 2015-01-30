@@ -72,7 +72,7 @@
             portDiv_txt.text = portDiv;
             //randtxt.portYr_txt.text = String(cardXML.date);
             randtxt.portIntro_txt.autoSize = TextFieldAutoSize.LEFT;
-            randtxt.portIntro_txt.text = String(cardXML.introduction);
+            randtxt.portIntro_txt.htmlText = String(cardXML.introduction);
             switch(String(cardXML.id).substr(0,1)){
                 case "G":
                     portYr_txt.text = "中国工程院院士";

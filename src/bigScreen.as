@@ -4,6 +4,7 @@
 	import flash.display.DisplayObject;
 	import flash.display.Shape;
     import flash.system.Security;
+    import flash.system.System;
     import flash.events.*;
     import flash.net.*;
     import flash.utils.Timer;
@@ -21,11 +22,11 @@
         public var frameHeight:uint = 1080;
         public var pixelAspect:Number = 1.25;
 
-        public var interval:uint = 5; // Interval in second for portrait change
+        public var interval:uint = 30; // Interval in second for portrait change
         public var siteUrl:String = "http://192.168.96.200";
         public var queryUrl:String = "/xml/Default.aspx?searchtype=wall";
-        public var tweenSpeed:Number = 1;
-        public var tweenDelay:Number = 0.4;
+        public var tweenSpeed:Number = 0.8;
+        public var tweenDelay:Number = 0;
         public var utDef:Array = ["G","Z","C","Y"]; // id start letter defination
 
         private var portList:Array;
@@ -43,6 +44,8 @@
         private var lastGridid:uint;
 
         //private var tl:TimelineLite;
+        private var tweenInProgress:Boolean;
+        private var tweenInQueue:Array;
 
         public var isDiag:Boolean = true;
 
@@ -116,6 +119,7 @@
             portH= frameHeight/col;
 
             //tl = new TimelineLite();
+            stage.addEventListener(KeyboardEvent.KEY_DOWN, keyDebug);
 
             // Apply mask for rand
             tweenMask = new Shape();
@@ -154,13 +158,15 @@
                 }
             }
 
-            if(interval < tweenDelay*col*row + 1 )
-                interval = tweenDelay*col*row + 1;
+            if(interval < tweenDelay*col*row + tweenSpeed )
+                interval = tweenDelay*col*row + tweenSpeed;
             if(isDiag) trace("[bigScreen] Refresh interval : "+interval);
 
             randTimer = new Timer(interval*1000);
             randTimer.addEventListener(TimerEvent.TIMER, onSlide);
             randTimer.start();
+
+            tweenInQueue = new Array();
         }
 
         private function onSlide(e:TimerEvent):void {
@@ -168,14 +174,29 @@
             refreshPage(currentPool);
         }
 
-        private function refreshPage(ut:uint):void {
-            for(var gridid = 0; gridid < col*row; gridid++){
-                flipCard(ut, gridid);
+        public function refreshPage(ut:uint):void {
+            randTimer.reset();
+            switchPool(ut);
+            if(!tweenInProgress){
+                //for(var gridid = 0; gridid < col*row; gridid++){
+                    //flipCard(ut, gridid);
+                //}
+                flipCard(ut);
+                tweenInProgress = true;
+                randTimer.start();
+            }else{
+                tweenInQueue.push(ut);
+                if(isDiag) trace("[bigScreen] Queued Pool #"+ut);
             }
+            var mem:String = (System.totalMemory / 1024 / 1024).toFixed(2) + " MB";
+            trace("[bigScreen] Memory usage : " + mem);
         }
 
-        public function flipCard(ut:uint, gridid:uint = 0):void
+        private function flipCard(ut:uint, gridid:uint = 0):void
         {
+            //if(gridid > row*col - 1 )
+                //return;
+
             var tmpXML:XML = getPort(ut);
             var tweenCard:randCard = new randCard();
             tweenCard.siteUrl = siteUrl;
@@ -203,40 +224,62 @@
             portHolder.x = portW/2;
             portHolder.y = portH/2;
 
+            //setChildIndex(cardHolder, numChildren -1 );
 
             var tl:TimelineLite = new TimelineLite();
             tl.to(cardHolder.getChildAt(0), tweenSpeed * 0.35, {
-                delay: gridid * tweenDelay,
+                delay: tweenDelay,
                 rotationX: 90,
-                ease:Quad.easeIn
+                ease: Quad.easeIn
             });
 
             tl.from(portHolder, tweenSpeed * .65, {
                 rotationX: -90,
                 ease:Back.easeOut,
-                onStart:function(){portHolder.visible=true},
-                onComplete:onTween,
+                onStart:onTween,
+                onStartParams:[portHolder, ut, gridid],
+                onComplete:onTweenEnd,
                 onCompleteParams:[gridid]
             });
+
         }
 
-        private function onTween(gridid:uint):void {
-            //removeChild(portList[gridid]);
+        private function onTween(holder:MovieClip, ut:uint, gridid:uint):void {
+            holder.visible=true;
+            if(gridid<row*col-1 && tweenInQueue.length==0)
+                flipCard(ut, gridid+1);
+            else if(tweenInQueue.length > 0){
+                var ut1:uint = tweenInQueue.shift();
+                if(ut1 != ut){
+                    switchPool(ut1);
+                    flipCard(ut1);
+                    randTimer.reset();
+                    randTimer.start();
+                    if(isDiag) trace("[bigScreen] Restart queued Pool #"+ut);
+                }
+            }
+        }
+
+        private function onTweenEnd(gridid:uint):void {
             portList[gridid].removeChildAt(0);
-			//trace("Removing : "+gridid);
-            //portList[gridid] = holder;
-            //if(gridid < row * col - 1)
+            if(gridid >= row * col - 1)
+                tweenInProgress = false;
+
+            //if(tweenInQueue.length > 0){
+                //var ut:uint = tweenInQueue.shift();
+                ////refreshPage(ut);
+                //if(ut != currentPool){
+                    //switchPool(ut);
+                    //flipCard(ut);
+                    //randTimer.reset();
+                    //randTimer.start();
+                    //if(isDiag) trace("[bigScreen] Continue queued Pool #"+ut);
+                //}
+            //}
                 //flipCard(currentPool, gridid + 1);
         }
 
         private function getPort(ut:uint = 0):XML {
-            if(ut != currentPool){
-                switchPool(ut);
-                if(ut != 0)
-                    currentPointer = poolPointer[ut-1];
-                else
-                    currentPointer = 0;
-            }
 
             var tmpXML:XML = userPool[currentPointer++];
 
@@ -260,9 +303,35 @@
         }
 
         private function switchPool(ut:uint):void {
-            currentPool = ut;
+            if(ut != currentPool){
+                currentPool = ut;
+                if(ut != 0)
+                    currentPointer = poolPointer[ut-1];
+                else
+                    currentPointer = 0;
+            }
         }
 
+        private function keyDebug(e:KeyboardEvent) {
+            if(isDiag) trace("[bigScreen] KeyPressed : "+e.charCode);
+            switch(e.charCode){
+                case 48:
+                    refreshPage(0);
+                    break;
+                case 49:
+                    refreshPage(1);
+                    break;
+                case 50:
+                    refreshPage(2);
+                    break;
+                case 51:
+                    refreshPage(3);
+                    break;
+                case 52:
+                    refreshPage(4);
+                    break;
+            }
+        }
 
 	}
 

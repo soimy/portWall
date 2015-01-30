@@ -1,6 +1,7 @@
 ﻿package {
 
     import flash.display.MovieClip;
+    import flash.display.Shape;
     import flash.system.Security;
     import flash.system.System;
     import flash.events.*;
@@ -187,7 +188,7 @@
 			// Initialize randport screen
             wallScreen.siteUrl = siteUrl;
             wallScreen.interval = randPortInterval;
-            wallScreen.isDiag = false;
+            wallScreen.isDiag = true;
             wallScreen.row = 5;
             wallScreen.col = 3;
             wallScreen.frameWidth = 2560;
@@ -196,6 +197,17 @@
             addChild(wallScreen);
 			wallScreen.x = frameWidth;
 			wallScreen.y = 0;
+            
+            // Apply mask for wallScreen
+            var bigMask = new Shape();
+            bigMask.graphics.lineStyle(1, 0x000000);
+            bigMask.graphics.beginFill(0x000000);
+            bigMask.graphics.drawRect(0, 0, 2560, frameHeight);
+            bigMask.graphics.endFill();
+            addChild(bigMask);
+            bigMask.x = 1920;
+            wallScreen.mask = bigMask;
+
 
         }
 
@@ -259,6 +271,8 @@
 				initCard(userClass, "sign");
 				return;
 			}
+
+            wallScreen.refreshPage(userClass);
 
 			for (var i:uint = 1; i <= 5; i++) {
 				var btn:nav_btn = new nav_btn();
@@ -748,6 +762,7 @@
 
                 if (e.target.name == "btn5") {
 					// return to frontpage
+                    wallScreen.refreshPage(0);
                     TweenLite.to(cardLayer, 0.5, {y: -frameHeight,
                         onComplete: function(){
                             cardLayer.removeChildren();
