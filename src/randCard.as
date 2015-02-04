@@ -92,11 +92,11 @@
             var mask:Shape = new Shape();
             mask.graphics.lineStyle(1, 0x000000);
             mask.graphics.beginFill(0x000000);
-            mask.graphics.drawRect(0, 0, 310, 215);
+            mask.graphics.drawRect(0, 0, 310, 205);
             mask.graphics.endFill();
             addChild(mask);
             mask.x = 265;
-            mask.y = 140;
+            mask.y = 145;
             randtxt.mask = mask;
 
             // TODO: Add mask blur filter

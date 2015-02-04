@@ -60,8 +60,10 @@
         private var signDetailMC:signDetail;
         private var shadowFilters:Array;
         private var errWin:ErrorWin;
+        private var configWin:cfgWin;
         private var wallScreen:bigScreen;
 		private var navbtns:Vector.<nav_btn>;
+        private var dbg:darkBG;
 
         // internal status tags
         public var currentQueryType:String = "";
@@ -98,7 +100,10 @@
             detailCardMC = new detailCard();
             signDetailMC = new signDetail();
             errWin = new ErrorWin();
+            configWin = new cfgWin();
             wallScreen = new bigScreen();
+            dbg = new darkBG();
+
 
             // Nav setup section
             arrowL.rotation = 0;
@@ -144,6 +149,9 @@
             randPortInterval = cfgXML.delay;
             signAutoShow = cfgXML.signAutoShow;
             isDiag = cfgXML.isDiag;
+            configWin.pwd = cfgXML.pwd;
+            configWin.mute = (cfgXML.mute=="0")?false:true;
+            //trace(configWin.mute);
             if(isDiag) trace("[portWall] Config loaded successfully.");
 			//init();
             if(isDiag){
@@ -172,8 +180,8 @@
                 alpha: 0,
                 x: "-150",
                 ease: Linear.easeOut
-            }, 0.3, "+=1");
-            tl.staggerFrom([fpBtn1, fpBtn2, fpBtn3, fpBtn4, fpBtn5], 0.5, {
+            }, 0.3);
+            tl.staggerFrom([fpBtn1, fpBtn2, fpBtn3, fpBtn4, fpBtn5, fpBtn6], 0.5, {
                 alpha: 0,
                 x: "150",
                 ease: Linear.easeOut
@@ -184,11 +192,13 @@
             fpBtn3.addEventListener(MouseEvent.CLICK, fpBtnClick);
             fpBtn4.addEventListener(MouseEvent.CLICK, fpBtnClick);
             fpBtn5.addEventListener(MouseEvent.CLICK, fpBtnClick);
+            //fpBtn6.addEventListener(MouseEvent.CLICK, fpBtnClick);
+            btn_config.addEventListener(MouseEvent.CLICK, fpBtnClick);
 
 			// Initialize randport screen
             wallScreen.siteUrl = siteUrl;
             wallScreen.interval = randPortInterval;
-            wallScreen.isDiag = true;
+            wallScreen.isDiag = false;
             wallScreen.row = 5;
             wallScreen.col = 3;
             wallScreen.frameWidth = 2560;
@@ -197,7 +207,7 @@
             addChild(wallScreen);
 			wallScreen.x = frameWidth;
 			wallScreen.y = 0;
-            
+
             // Apply mask for wallScreen
             var bigMask = new Shape();
             bigMask.graphics.lineStyle(1, 0x000000);
@@ -212,10 +222,18 @@
         }
 
         public function fpBtnClick(e:MouseEvent):void {
+            if(e.currentTarget.name == "btn_config"){
+                this.dim(true);
+                this.addChild(configWin);
+                //configWin.x = 960;
+                //configWin.y = 540;
+                //configWin.gotoAndStop(1);
+                return;
+            }
             EventDispatcher(e.target).removeEventListener(e.type, arguments.callee);
             var id:uint = int(e.currentTarget.name.substr(5,1));
             var tl: TimelineLite = new TimelineLite();
-            tl.staggerTo([fpBtn1, fpBtn2, fpBtn3, fpBtn4, fpBtn5], 0.5, {
+            tl.staggerTo([fpBtn1, fpBtn2, fpBtn3, fpBtn4, fpBtn5, fpBtn6], 0.5, {
                 alpha: 0,
                 x: "150",
                 ease: Linear.easeIn
@@ -247,6 +265,7 @@
             // Detail UI setup section
             detailCardMC.siteUrl = siteUrl;
             detailCardMC.isDiag = isDiag;
+            detailCardMC.mute = configWin.mute;
 
             // signDetail UI setup section
             signDetailMC.siteUrl = siteUrl;
@@ -399,7 +418,7 @@
 
             if(xmlData.group != undefined)
             { // Normal portcard list
-                gpList += xmlData.group;
+				gpList += xmlData.group;
                 //trace(gpList);
                 if(isDiag) trace("[portWall] "+sortType +" data loaded, count : " + gpList.length());
             }
@@ -561,7 +580,7 @@
 				var gpMC:MovieClip;
 
                 // if gpMC not created
-                if(currentCardId == 0 && usrCount){
+                if(currentCardId == 0){
                     gpMC = new MovieClip();
                     var gpLabel:groupLabel = new groupLabel();
                     var gpName = gp.@id;
@@ -577,7 +596,7 @@
 
                     gpLabel.keyword = gpName;
 
-                    gpMC.addChild(gpLabel);
+					if(usrCount)gpMC.addChild(gpLabel);
                     gpLabel.x = gpLabel.y = 0;
 
                     group.push(gpMC);
@@ -624,7 +643,7 @@
 
                 }
 
-                if(currentCardId >= usrCount - 1){
+                if(currentCardId > usrCount - 1){
                     currentCardId = 0;
                     currentGpId ++;
                 }
@@ -877,11 +896,29 @@
             //trace(detailXML);
             //queryInProgress = false;
 
+            detailCardMC.mute = configWin.mute;
             detailCardMC.pushPort(detailXML.user[0]);
             TweenLite.to(detailCardMC, 0.5, {y:0});
 
         }
 
+        public function dim(stat:Boolean):void {
+            if(stat){
+                dbg.width = 1920;
+                dbg.height = 1080;
+                addChild(dbg);
+                dbg.alpha = 0.5;
+                TweenLite.from(dbg, 0.5, {alpha:0});
+            }else{
+                if(contains(dbg)){
+                    TweenLite.to(dbg, 0.5, {alpha:0, onComplete:onDimRemove});
+                }
+            }
+        }
+
+        private function onDimRemove():void {
+            removeChild(dbg);
+        }
     }
 
 }
