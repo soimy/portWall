@@ -62,24 +62,6 @@
 
         private function start(e:Event):void {
             this.removeEventListener(Event.ADDED_TO_STAGE, start);
-            tl = new TimelineLite();
-            introCard = new tweenCard();
-            introCard.frameWidth = pgWidth;
-            introCard.frameHeight = 660;
-            introCard.tweenSpeed = 0.5;
-            introCard.fillMode = 1;
-			introCard.mute = this.mute;
-			introCard.mouseChildren = false;
-			
-			
-			bigCard = new tweenCard();
-			bigCard.frameWidth = 1536;
-			bigCard.frameHeight = 1080;
-			bigCard.fillMode = 2;
-			bigCard.pixelAspect = 1.25;
-			bigCard.mute = true;
-			bigCard.tweenType = 5;
-			
 
             back_btn.mouseChildren = false;
             slider2L.mouseChildren = slider2R.mouseChildren = false;
@@ -116,6 +98,24 @@
                 if(isDiag) trace("[detailCard] XML Data Error!");
                 return;
             }
+			
+			tl = new TimelineLite();
+            introCard = new tweenCard();
+            introCard.frameWidth = pgWidth;
+            introCard.frameHeight = 660;
+            introCard.tweenSpeed = 0.5;
+            introCard.fillMode = 1;
+			introCard.mute = this.mute;
+			introCard.mouseChildren = false;
+			
+			
+			bigCard = new tweenCard();
+			bigCard.frameWidth = 1536;
+			bigCard.frameHeight = 1080;
+			bigCard.fillMode = 2;
+			bigCard.pixelAspect = 1.25;
+			bigCard.mute = true;
+			bigCard.tweenType = 5;
 
             xmlInfo = detailXML;
 
@@ -423,7 +423,8 @@
 			if(isDiag) trace("[detailCard] introCard["+currentCardId+"] "+result);
 			currentCardId ++;
 			currentCardId %= this.cardXMLList.length();
-			return siteUrl+result;
+			if(result == "") return result;
+			else return siteUrl+result;
 		}
 
 	}

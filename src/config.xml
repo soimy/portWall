@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <xml>
-    <siteUrl>http://192.168.96.200</siteUrl>
+    <siteUrl>http://192.168.1.159</siteUrl>
     <delay>30</delay>
     <signAutoShow>1</signAutoShow>
     <isDiag>1</isDiag>

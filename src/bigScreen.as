@@ -23,10 +23,10 @@
         public var pixelAspect:Number = 1.25;
 
         public var interval:uint = 30; // Interval in second for portrait change
-        public var siteUrl:String = "http://192.168.96.200";
+        public var siteUrl:String = "http://192.168.1.159";
         public var queryUrl:String = "/xml/Default.aspx?searchtype=wall";
-        public var tweenSpeed:Number = 0.8;
-        public var tweenDelay:Number = 0;
+        public var tweenSpeed:Number = 0.5;
+        public var tweenDelay:Number = 0.25;
         public var utDef:Array = ["G","Z","C","Y"]; // id start letter defination
 
         private var portList:Array;
@@ -122,11 +122,11 @@
             stage.addEventListener(KeyboardEvent.KEY_DOWN, keyDebug);
 
             // Apply mask for rand
-            tweenMask = new Shape();
-            tweenMask.graphics.lineStyle(1, 0x000000);
-            tweenMask.graphics.beginFill(0x000000);
-            tweenMask.graphics.drawRect(0, 0, portW, portH);
-            tweenMask.graphics.endFill();
+            //tweenMask = new Shape();
+            //tweenMask.graphics.lineStyle(1, 0x000000);
+            //tweenMask.graphics.beginFill(0x000000);
+            //tweenMask.graphics.drawRect(0, 0, portW, portH);
+            //tweenMask.graphics.endFill();
 
             portList = new Array();
 
@@ -148,12 +148,23 @@
                     cardHolder.addChild(portHolder);
                     portHolder.x = portW/2;
                     portHolder.y = portH/2;
-                    portList.push(cardHolder);
                     addChild(cardHolder);
                     cardHolder.x = portW*i ;
                     cardHolder.y = portH*j ;
-                    cardHolder.transform.perspectiveProjection= new PerspectiveProjection();
-                    cardHolder.transform.perspectiveProjection.projectionCenter = new Point(portW/2, portH/2);
+
+                    var twMask:Shape = new Shape();
+                    twMask.graphics.lineStyle(1, 0x000000);
+                    twMask.graphics.beginFill(0x000000);
+                    twMask.graphics.drawRect(0, 0, portW, portH);
+                    twMask.graphics.endFill();
+
+                    addChild(twMask);
+                    twMask.x = portW*i;
+                    twMask.y = portH*j;
+                    cardHolder.mask = twMask;
+                    portList.push(cardHolder);
+                    //cardHolder.transform.perspectiveProjection= new PerspectiveProjection();
+                    //cardHolder.transform.perspectiveProjection.projectionCenter = new Point(portW/2, portH/2);
 
                 }
             }
@@ -219,24 +230,33 @@
             portHolder.addChild(tweenCard);
             tweenCard.x = - portW/2;
             tweenCard.y = - portH/2;
-            portHolder.visible = false;
+            //portHolder.visible = false;
             cardHolder.addChild(portHolder);
             portHolder.x = portW/2;
             portHolder.y = portH/2;
 
             //setChildIndex(cardHolder, numChildren -1 );
 
-            var tl:TimelineLite = new TimelineLite();
-            tl.to(cardHolder.getChildAt(0), tweenSpeed * 0.35, {
-                delay: tweenDelay,
-                rotationX: 90,
-                ease: Quad.easeIn
-            });
+            //var tl:TimelineLite = new TimelineLite();
+            //tl.to(cardHolder.getChildAt(0), tweenSpeed * 0.35, {
+                //delay: tweenDelay,
+                //rotationX: 90,
+                //ease: Quad.easeIn
+            //});
 
-            tl.from(portHolder, tweenSpeed * .65, {
-                rotationX: -90,
-                ease:Back.easeOut,
-                onStart:onTween,
+            //tl.from(portHolder, tweenSpeed * .65, {
+                //rotationX: -90,
+                //ease:Back.easeOut,
+                //onStart:onTween,
+                //onStartParams:[portHolder, ut, gridid],
+                //onComplete:onTweenEnd,
+                //onCompleteParams:[gridid]
+            //});
+            TweenLite.to(cardHolder.getChildAt(0), tweenSpeed, { delay: tweenDelay, x: portW * 1.5});
+            TweenLite.from(portHolder, tweenSpeed, {
+                delay: tweenDelay,
+                x: -portW * 0.5,
+                onStart: onTween,
                 onStartParams:[portHolder, ut, gridid],
                 onComplete:onTweenEnd,
                 onCompleteParams:[gridid]
@@ -245,7 +265,7 @@
         }
 
         private function onTween(holder:MovieClip, ut:uint, gridid:uint):void {
-            holder.visible=true;
+            //holder.visible=true;
             if(gridid<row*col-1 && tweenInQueue.length==0)
                 flipCard(ut, gridid+1);
             else if(tweenInQueue.length > 0){

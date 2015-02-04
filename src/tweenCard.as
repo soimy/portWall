@@ -54,10 +54,10 @@
             mc1.x = mc2.x = frameWidth/2;
             mc1.y = mc2.y = frameHeight/2;
 
-            var bm1:Bitmap = new Bitmap(new BitmapData(frameWidth, frameHeight));
-            mc1.addChild(bm1);
-            bm1.x = -frameWidth/2;
-            bm1.y = -frameHeight/2;
+            //var bm1:Bitmap = new Bitmap(new BitmapData(frameWidth, frameHeight));
+            //mc1.addChild(bm1);
+            //bm1.x = -frameWidth/2;
+            //bm1.y = -frameHeight/2;
 
             frameMask = new Shape();
             frameMask.graphics.lineStyle(1, 0x000000);
@@ -74,6 +74,7 @@
 
         public function pushUrl(url:String):void {
 			// typ : 0 = image, 1 = movie
+			if(url == "") return;
 			this.currentUrl = url;
 			var typ:String = url.substr(url.length-3);
 			// trace(typ);
@@ -99,6 +100,7 @@
 				this.removeEventListener(MouseEvent.CLICK, onVidClick);
 				var imgLoader:Loader = new Loader();
 				imgLoader.contentLoaderInfo.addEventListener(Event.COMPLETE, onLoaded);
+				imgLoader.contentLoaderInfo.addEventListener(IOErrorEvent.IO_ERROR, onIOErrorHandler);
 				imgLoader.load(new URLRequest(url));
 				return;
 			}
@@ -111,6 +113,10 @@
 
         private function onLoaded(e:Event):void {
             pushPort(e.target.content.bitmapData);
+        }
+		
+		private function onIOErrorHandler(e:IOErrorEvent):void {
+            
         }
 
         public function pushPort(tmpBMD:BitmapData):void {

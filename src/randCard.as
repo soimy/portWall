@@ -89,21 +89,21 @@
             }
 
             // Apply mask for text info
-            var mask:Shape = new Shape();
-            mask.graphics.lineStyle(1, 0x000000);
-            mask.graphics.beginFill(0x000000);
-            mask.graphics.drawRect(0, 0, 310, 205);
-            mask.graphics.endFill();
-            addChild(mask);
-            mask.x = 265;
-            mask.y = 145;
-            randtxt.mask = mask;
+            var tmask:Shape = new Shape();
+            tmask.graphics.lineStyle(1, 0x000000);
+            tmask.graphics.beginFill(0x000000);
+            tmask.graphics.drawRect(0, 0, 310, 205);
+            tmask.graphics.endFill();
+            addChild(tmask);
+            tmask.x = 265;
+            tmask.y = 145;
+            randtxt.mask = tmask;
 
             // TODO: Add mask blur filter
 
             // TODO: Add textfield scrolling animation
-            if(randtxt.height > mask.height){
-                var dist:Number = randtxt.height - mask.height;
+            if(randtxt.height > tmask.height){
+                var dist:Number = randtxt.height - tmask.height;
                 TweenLite.to(randtxt, dist/scrollSpeed, {
                     y:randtxt.y-dist, 
                     delay:5, 
