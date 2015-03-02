@@ -6,5 +6,9 @@
     <isDiag>1</isDiag>
     <pwd>4321</pwd>
     <mute>0</mute>
+    <bgmList>
+        <bgm>music/bgm01.mp3</bgm>
+        <bgm>music/bgm02.mp3</bgm>
+    </bgmList>
 </xml>
 

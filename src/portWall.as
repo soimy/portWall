@@ -7,6 +7,7 @@
     import flash.events.*;
     import flash.net.*;
     import flash.ui.Mouse;
+    import flash.geom.Point;
 
     import flash.filters.BitmapFilter;
     import flash.filters.BitmapFilterQuality;
@@ -64,6 +65,7 @@
         private var wallScreen:bigScreen;
 		private var navbtns:Vector.<nav_btn>;
         private var dbg:darkBG;
+        public var bgMusic:bgm;
 
         // internal status tags
         public var currentQueryType:String = "";
@@ -103,7 +105,7 @@
             configWin = new cfgWin();
             wallScreen = new bigScreen();
             dbg = new darkBG();
-
+            bgMusic = new bgm();
 
             // Nav setup section
             arrowL.rotation = 0;
@@ -151,6 +153,7 @@
             isDiag = cfgXML.isDiag;
             configWin.pwd = cfgXML.pwd;
             configWin.mute = (cfgXML.mute=="0")?false:true;
+            bgMusic.pushBgm(cfgXML.bgmList.bgm);
             //trace(configWin.mute);
             if(isDiag) trace("[portWall] Config loaded successfully.");
 			//init();
@@ -418,7 +421,10 @@
 
             if(xmlData.group != undefined)
             { // Normal portcard list
-				gpList += xmlData.group;
+				for each(var gp:XML in xmlData.group){
+					if(gp.user.length()>0)
+						gpList += gp;
+				}
                 //trace(gpList);
                 if(isDiag) trace("[portWall] "+sortType +" data loaded, count : " + gpList.length());
             }
@@ -787,6 +793,8 @@
                             cardLayer.removeChildren();
                             cardLayer.x = 0;
                         }} );
+                    if(labelLayer.y < frameHeight)
+                        TweenLite.to(labelLayer, 0.5, {y: frameHeight});
 
                     for(var i:uint = 0; i < navbtns.length-1; i++){
                         TweenLite.to(navbtns[i], 0.3, {y:"140", ease:Linear.easeIn, delay:0.15*i})
@@ -846,7 +854,7 @@
                 initCard(currentUserClass, searchType, sort);
             }
 
-            else if(e.target is groupLabel){
+            else if(e.target is groupLabel && e.target.localToGlobal(new Point(0,0)).y > 200){
                 removeEventListener(MouseEvent.CLICK, onClick);
                 if(e.target.keyword == "all")
                     initCard(currentUserClass, "all", sortType);

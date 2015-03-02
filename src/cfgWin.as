@@ -108,6 +108,7 @@
                         mute = !mute;
                         if(mute) btns.txt.text = "音量：关";
                         else btns.txt.text = "音量：开";
+                        MovieClip(this.parent).bgMusic.volume(mute?0:1);
                         break;
 				}
 			}

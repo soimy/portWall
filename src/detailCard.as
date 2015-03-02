@@ -44,7 +44,7 @@
 		//private var ns:NetStream;
         private var tl:TimelineLite;
         private var scrollSpeed:Number = 20; // 20px per second
-        
+
         private var introCard:tweenCard;
 		private var bigCard:tweenCard;
         private var currentCardId:uint = 0;
@@ -98,7 +98,7 @@
                 if(isDiag) trace("[detailCard] XML Data Error!");
                 return;
             }
-			
+
 			tl = new TimelineLite();
             introCard = new tweenCard();
             introCard.frameWidth = pgWidth;
@@ -107,8 +107,8 @@
             introCard.fillMode = 1;
 			introCard.mute = this.mute;
 			introCard.mouseChildren = false;
-			
-			
+
+
 			bigCard = new tweenCard();
 			bigCard.frameWidth = 1536;
 			bigCard.frameHeight = 1080;
@@ -190,7 +190,7 @@
                 tl.to(bigIntro_txt, 1, {
                     alpha:0,
                     onComplete: function(){
-                        bigIntro_txt.y = 50;    
+                        bigIntro_txt.y = 50;
                         tl.restart();
                     }
                 }, "+=2");
@@ -199,6 +199,7 @@
 
         private function setBtnActive(id:uint){
             currentPage = id;
+            MovieClip(this.parent).bgMusic.volume(mute?0:1);
 			var stat:uint;
             for(var i:uint = 0; i<5; i++){
 				if(i == id) stat = 2;
@@ -232,11 +233,12 @@
             pushIntro(txt);
             bigIntro_txt.htmlText = txt;
             tl.restart();
-			
-			if(id == 4){ 
+
+			if(id == 4){
                 introMC.removeChildren();
 				introMC.addChild(introCard);
                 introCard.mute = mute;
+                currentCardId = 0;
 				var cardUrl:String = getPort();
 				introCard.pushUrl(cardUrl);
 				slider2L.y = slider2R.y = 550;
@@ -248,7 +250,7 @@
 				bigCard.disableVid();
 				if(this.contains(bigCard)) removeChild(bigCard);
 			}
-			
+
             return;
         }
 
@@ -351,7 +353,7 @@
         }
 
         private function onClick(e:MouseEvent):void {
-			
+
 			//trace(e.target);
 
             if(e.target.name == "back_btn"){
@@ -367,25 +369,33 @@
 
                 var direction:Number = e.target.rotation;
                 if(currentPage == 4){
-                    if(direction == 0) introCard.tweenType = 2;
-                    else introCard.tweenType = 1;
-					var cardUrl:String = getPort();
+					var cardUrl:String;
+                    if(direction == 0) {
+                        introCard.tweenType = 2;
+                        cardUrl = getPort(2);
+                    }
+                    else{
+                        introCard.tweenType = 1;
+                        cardUrl = getPort(1);
+                    }
                     introCard.pushUrl(cardUrl);
 					bigCard.pushUrl(cardUrl);
                     return;
                 }
+                MovieClip(this.parent).bgMusic.volume(mute?0:1);
                 removeEventListener(MouseEvent.CLICK, onClick);
                 var newx = Math.cos(direction / 180 * Math.PI) * pgWidth/2;
                 //if(isDiag) trace("[portWall] Sliding to : " + (cardLayer.x + newx));
                 TweenLite.to(introMC, 0.5, { x:String(newx), onComplete:testSlide });
 
             }
-			
+
 			if(e.target is tweenCard){
 				//trace(e.target.currentUrl);
 				var tmpUrl:String = e.target.currentUrl;
 				var typ:String = tmpUrl.substr(tmpUrl.length-3);
 				if(typ == "mp4" || typ == "flv") bigCard.playVid(tmpUrl);
+                MovieClip(this.parent).bgMusic.volume(0);
 			}
 
         }
@@ -399,6 +409,8 @@
             }*/
 			introCard.disableVid();
 			bigCard.disableVid();
+            MovieClip(this.parent).bgMusic.volume(mute?0:1);
+            if(this.contains(bigCard)) removeChild(bigCard);
             tl.stop();
             bigIntro_txt.y = 50;
             bigIntro_txt.alpha = 1;
@@ -418,11 +430,21 @@
             addEventListener(MouseEvent.CLICK, onClick);
         }
 
-		private function getPort():String {
+		private function getPort(dir:uint = 0):String {
+            switch(dir){
+                case 0:
+                    break;
+                case 1:
+                    currentCardId ++;
+                    currentCardId %= this.cardXMLList.length();
+                    break;
+                case 2:
+                    if(currentCardId > 0 )currentCardId --;
+                    else currentCardId += cardXMLList.length()-1;
+                    break;
+            }
 			var result:String = cardXMLList[currentCardId].toString();
 			if(isDiag) trace("[detailCard] introCard["+currentCardId+"] "+result);
-			currentCardId ++;
-			currentCardId %= this.cardXMLList.length();
 			if(result == "") return result;
 			else return siteUrl+result;
 		}
